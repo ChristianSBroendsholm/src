@@ -2,8 +2,8 @@ let points = []; let rootPoints = []; let newLayerList = [];
 let listOfLists = [];
 let allPPoints = [];
 let checkClick;
-
-//gør, så man kan højreklikke uden en contextmenu popup
+let scrollSpeed = 1
+//gør så man kan højreklikke uden en contextmenu popup
 document.addEventListener('contextmenu', event => event.preventDefault());
 
 function setup(){
@@ -15,6 +15,8 @@ let t = 0
 let IsHolding = false
 function draw(){
     t+=1/60*0.25;
+
+translate(0,height-scrollSpeed)
 clear(); 
 lerpPoints();
     

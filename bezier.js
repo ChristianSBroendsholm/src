@@ -57,7 +57,7 @@ dragA = true
     Pg = {x:gX, y:gY} //objekt for bezierkurvens punkter
     Points.push(Pg)//sætter x- og y værdier i et array
 
-    //tegner en linje mellem Points listens index x og y værdier -1 og nuværende
+    //tegner en linje mellem Points listens index x og y værdier -1 og den nuværende
    for (let i = 1; i < Points.length; i++) {
     stroke('red')
     line(Points[i-1].x,Points[i-1].y,Points[i].x,Points[i].y)
