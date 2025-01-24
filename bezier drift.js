@@ -1,92 +1,117 @@
-let points = []; let rootPoints = []; let newLayerList = [];
-let listOfLists = [];
-let allPPoints = [];
-let checkClick;
-let scrollSpeed = 1
-//gør så man kan højreklikke uden en contextmenu popup
-document.addEventListener('contextmenu', event => event.preventDefault());
-
+let Points = []; 
+let A = {x:0, y:600}; //statisk
+let B = {x:600, y:500}; //statisk
+let C = {x:0, y:0}; //dynamisk punkt
+let dragA, dragB;
+let scrollSpeed = 0
 function setup(){
     createCanvas(window.innerWidth,window.innerHeight)
+    background('lightgrey')
 }
-
-
+document.addEventListener('contextmenu', event => event.preventDefault());
 let t = 0
 let IsHolding = false
+
 function draw(){
-    t+=1/60*0.25;
-
-translate(0,height-scrollSpeed)
-clear(); 
-lerpPoints();
-    
+    clear(); 
     strokeWeight(5)
-    if (mouseIsPressed){
-    checkClick = true
-    }
-    if(checkClick == true){
-if(!mouseIsPressed){
-    rootPoints.push({x:floor(mouseX),y:floor(mouseY)});
-    console.log(allPPoints)
-        checkClick = false
-        clear();
-        allPPoints = []
-        t=0
- }
-}
-for(let i = 0; i<rootPoints.length; i++){
-    stroke(0)
-    fill(0)
-    circle(rootPoints[i].x, rootPoints[i].y,10)
-}
-for(let i = 1; i<rootPoints.length; i++){
-    stroke(0)
-    fill(0)
-    line(rootPoints[i-1].x,rootPoints[i-1].y,rootPoints[i].x,rootPoints[i].y)
-}
-
-
-if (t >= 1) {
-    t=1
-    if(mouseButton===LEFT){
-    t = 0
-    clear();
-    allPPoints = []
-}
-   }
-for (let i = 1; i < allPPoints.length; i++) {
-    let segment = i / allPPoints.length;
-    stroke(segment * 255, 0, (1 - segment) * 255);
-    strokeWeight(5)
-    line(allPPoints[i-1].x,allPPoints[i-1].y,allPPoints[i].x,allPPoints[i].y)
-   }
-}
-function lerpPoints(){
-
-if (rootPoints.length < 3) return;
-let layersLeft = rootPoints.length-1;
-let points = rootPoints;
-newLayerList = [];
-while (layersLeft > 0){
-    for(let i = 1; i < points.length; i++){
-        let Px = lerp(points[i-1].x, points[i].x, t);
-        let Py = lerp(points[i-1].y, points[i].y, t);
-let P = {x:Px, y:Py};
-newLayerList.push(P);
-stroke(0,0,180,25)
-strokeWeight(5)
-line(points[i-1].x,points[i-1].y,points[i].x,points[i].y)
-noStroke()
-fill(0,0,0,50)
-circle(points[i-1].x,points[i-1].y,10)
-circle(points[i].x,points[i].y,10)
+    t+=0.005;
+  scrollSpeed +=1
+  A.x = -scrollSpeed;A.y = scrollSpeed;
+  B.x = -scrollSpeed;B.y = scrollSpeed;
+  C.x = -scrollSpeed;C.y = scrollSpeed;
+  translate(scrollSpeed,0)
+  if (keyIsDown(65)){
+    B.y += 20
   }
-  listOfLists.push(newLayerList)
-  points = newLayerList
-  newLayerList = []
-  layersLeft--
- }
- if (points.length === 1) {
- allPPoints.push({x:points[0].x,y:points[0].y})
- }
+    if (keyIsDown(68)){
+    B.y -= 20
+  }
+  
+    if(IsHolding == true){
+        C.x = mouseX
+        C.y = mouseY
+    }
+    //Hvis man holder venstreklik kan man rykke punkterne
+    if(mouseIsPressed && mouseX > A.x - 10 / 2 &&
+        mouseX < A.x + 10 / 2 &&
+        mouseY > A.y - 10 / 2 &&
+        mouseY < A.y + 10 / 2 ){
+dragA = true
+        }
+        if(dragA === true){
+            A.x = mouseX
+            A.y = mouseY
+            if(!mouseIsPressed){
+                dragA=false;
+            }
+        }
+        if(mouseIsPressed && mouseX > B.x - 10 / 2 &&
+            mouseX < B.x + 10 / 2 &&
+            mouseY > B.y - 10 / 2 &&
+            mouseY < B.y + 10 / 2 ){
+    dragB = true
+            }
+            if(dragB==true){
+                B.x = mouseX
+                B.y = mouseY
+                if(!mouseIsPressed){
+                    dragB=false;
+                }
+            }
+
+    let dX = lerp(A.x,C.x,t)
+    let dY = lerp(A.y,C.y,t)
+    let eX = lerp(C.x,B.x,t)
+    let eY = lerp(C.y,B.y,t)
+    let gX = lerp(dX,eX,t)
+    let gY = lerp(dY,eY,t)
+    Pg = {x:gX, y:gY} //objekt for bezierkurvens punkter
+    Points.push(Pg)//sætter x- og y værdier i et array
+
+    //tegner en linje mellem Points listens index x og y værdier -1 og den nuværende
+   for (let i = 1; i < Points.length; i++) {
+    stroke('red')
+    line(Points[i-1].x,Points[i-1].y,Points[i].x,Points[i].y)
+   }
+
+   stroke('black')
+   line(A.x,A.y,C.x,C.y)
+   line(B.x,B.y,C.x,C.y)
+   stroke('blue')
+   //line(dX,dY,eX,eY)
+
+   stroke('black')
+   strokeWeight(2)
+   fill('white')
+   circle(A.x,A.y,10)
+   circle(B.x,B.y,10)
+   circle(C.x,C.y,10)
+   fill('black')
+   circle(dX,dY,10)
+   circle(eX,eY,10)
+   fill('white')
+   circle(gX,gY,10)
+
+
+   if (t >= 1) {
+    //t = 0
+    //Points = []
+    //clear()
+   }
+
+function mousePressed(){
+    if (mouseButton == "right"){
+        IsHolding = true
+    }
+}
+
+function mouseReleased(){
+    if (mouseButton == "right"){
+        clear();
+        Points = []
+        t = 0
+        IsHolding = false
+    }
+  }
 }
