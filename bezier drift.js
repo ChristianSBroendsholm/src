@@ -8,12 +8,13 @@ let upd = {x:0, y:0};
 let accel = 0;
 let cScale = 1;
 let lineAcc = 0;
+let accelFactor = 0.2;
+let score = 0;
+let friction = 0.99;
 let ABSlope = 0;
 let curveShape = ""
 let roadWidth = 100
 let debugMode = false
-let friction = 0.99
-let accelFactor = 0.2;
 function preload(){
     carImg = loadImage('bilbillede.webp');
   }
@@ -193,48 +194,75 @@ function updPoints(){
     A.y = B.y;
     cScale = 1;
 }
+
+
 function car(){
 
-    if (keyIsDown(65)){
-        angle -= 2.5
-      }
-    if (keyIsDown(68)){
-        angle += 2.5
-    }
-    let force = createVector(0, 0);
-    if (keyIsDown(87)){
-        force = createVector(cos(angle)*accelFactor, sin(angle)*accelFactor);
-    }
-    if (keyIsDown(83)){
-        force = createVector(cos(angle)*(-accelFactor), sin(angle)*(-accelFactor))
-    }
-    carVel.x -= force.x
-    carVel.y -= force.y
-    carVel.x *= friction
-    carVel.y *= friction
-        upd.x -= cos(angle) * accelFactor * accel
-        upd.y -= sin(angle) * accelFactor * accel
-    
-    push();
-    translate(carPos.x,carPos.y);
-    if(angle>360){
-        angle = 0
-    }
-    momentumDirection = createVector (carVel.x, carVel.y).normalize()
-    momentumAngle = momentumDirection.heading()
-    rotate(angle);
-    rectMode(CENTER);
-    
-    imageMode(CENTER);
-    image(carImg, 0, 0, 150, 100);
-    pop();
-    
-    carPos.x += carVel.x
-    carPos.y += carVel.y
-    stroke(0)
-    upd = {x:0, y:0}
-    origo.x = -carPos.x+width/2
-    origo.y = -carPos.y+height/2
-    accelFactor = 0.1 + dist(carPos.x,carPos.y,gX,gY)/25000
-    
+if (keyIsDown(65)){
+    angle -= 2.5
+  }
+if (keyIsDown(68)){
+    angle += 2.5
 }
+let force = createVector(0, 0);
+if (keyIsDown(87)){
+    force = createVector(cos(angle)*accelFactor, sin(angle)*accelFactor);
+}
+if (keyIsDown(83)){
+    force = createVector(cos(angle)*(-accelFactor), sin(angle)*(-accelFactor))
+}
+carVel.x -= force.x
+carVel.y -= force.y
+carVel.x *= friction
+carVel.y *= friction
+    upd.x -= cos(angle) * accelFactor * accel
+    upd.y -= sin(angle) * accelFactor * accel
+
+push();
+translate(carPos.x,carPos.y);
+if(angle>360){
+    angle = 0
+}
+momentumDirection = createVector (carVel.x, carVel.y).normalize()
+momentumAngle = momentumDirection.heading()
+scoreCounter();
+rotate(angle);
+rectMode(CENTER);
+
+imageMode(CENTER);
+image(carImg, 0, 0, 150, 100);
+pop();
+
+carPos.x += carVel.x
+carPos.y += carVel.y
+stroke(0)
+upd = {x:0, y:0}
+origo.x = -carPos.x+width/2
+origo.y = -carPos.y+height/2
+accelFactor = 0.1 + dist(carPos.x,carPos.y,gX,gY)/25000
+
+}
+
+function scoreCounter(){
+strokeWeight(2)
+// Når bilens retning er ortogonal på sin momentum, gives det højeste antal score, men er også afhængigt af bilens hastighed. pr sekund. Dette betyder, at man får score for at lave et drift.
+if(carOnRoad()){
+score += Math.abs(sin(momentumAngle-angle-180)) * dist(0,0,carVel.x,carVel.y)
+}
+textSize(50)
+stroke(255)
+fill((1 - (10000 - score) / 10000) * 255, (10000 - score) * 255 / 10000, 0)
+text(floor(score),0,-300)
+}
+function carOnRoad() {
+    let minDist = Infinity; // Sættes til høj værdi så enhver ny værdi overskrider den.
+    // Gennemløb hvert punkt i 'points'-arrayet
+    points.forEach(p => {
+      let d = dist(carPos.x, carPos.y, p.x, p.y);
+      if (d < minDist) {
+        minDist = d;
+      }
+    });
+    return minDist < roadWidth;
+  }
+// Kilde til bilbillede: https://www.v4b.co.uk/mercedes-benz-car-lease-deals/business/c-class/saloon-c220d-amg-line-premium-pan-roof-4dr-9g-tronic/
