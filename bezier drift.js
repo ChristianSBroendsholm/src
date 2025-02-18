@@ -12,6 +12,8 @@ let ABSlope = 0;
 let curveShape = ""
 let roadWidth = 100
 let debugMode = false
+let friction = 0.99
+let accelFactor = 0.2;
 function preload(){
     carImg = loadImage('bilbillede.webp');
   }
@@ -191,25 +193,48 @@ function updPoints(){
     A.y = B.y;
     cScale = 1;
 }
-function car(){ 
+function car(){
 
-if (keyIsDown(65)){
-    carPos.x -= 20
-  }
+    if (keyIsDown(65)){
+        angle -= 2.5
+      }
     if (keyIsDown(68)){
-    carPos.x += 20
-  }
-  if (keyIsDown(87)){
-    carPos.y -= 20
-  }
+        angle += 2.5
+    }
+    let force = createVector(0, 0);
+    if (keyIsDown(87)){
+        force = createVector(cos(angle)*accelFactor, sin(angle)*accelFactor);
+    }
     if (keyIsDown(83)){
-    carPos.y += 20
-  }
-  push();
-  translate(carPos.x,carPos.y)
-  rectMode(CENTER)
-rect(width/2,height/2,40,100)
-pop();
-origo.x = -carPos.x
-origo.y = -carPos.y
+        force = createVector(cos(angle)*(-accelFactor), sin(angle)*(-accelFactor))
+    }
+    carVel.x -= force.x
+    carVel.y -= force.y
+    carVel.x *= friction
+    carVel.y *= friction
+        upd.x -= cos(angle) * accelFactor * accel
+        upd.y -= sin(angle) * accelFactor * accel
+    
+    push();
+    translate(carPos.x,carPos.y);
+    if(angle>360){
+        angle = 0
+    }
+    momentumDirection = createVector (carVel.x, carVel.y).normalize()
+    momentumAngle = momentumDirection.heading()
+    rotate(angle);
+    rectMode(CENTER);
+    
+    imageMode(CENTER);
+    image(carImg, 0, 0, 150, 100);
+    pop();
+    
+    carPos.x += carVel.x
+    carPos.y += carVel.y
+    stroke(0)
+    upd = {x:0, y:0}
+    origo.x = -carPos.x+width/2
+    origo.y = -carPos.y+height/2
+    accelFactor = 0.1 + dist(carPos.x,carPos.y,gX,gY)/25000
+    
 }
