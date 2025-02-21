@@ -1,3 +1,2 @@
 # src
-Hello GitHub
-Changed from GitHub
+Den primære HTML-fil er "bezier drift.html", og den primære .js-fil har samme navn. Andre HTML- og .js-filer var en del af processen for at forstå bézierkurver. Desuden kræves det, at "bilbillede.webp" er i samme mappe som de førstnævnte filer før at kunne køre.
